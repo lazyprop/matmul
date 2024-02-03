@@ -10,15 +10,15 @@
 #define DTYPE float
 
 #ifdef DEBUG
-const int N = 3, M = 3, O = 3;
+#define N 3
 #else
-const int N = 1024, M = 1024, O = 1024;
+#define N 1024
 #endif
 
-void print_matrix(DTYPE* mat, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      printf("%.1f ", mat[i*n+j]);
+void print_matrix(DTYPE* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      printf("%.1f ", mat[i*N+j]);
     }
     printf("\n");
   }
@@ -27,16 +27,16 @@ void print_matrix(DTYPE* mat, int n, int m) {
 
 void baseline(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int i = 0; i < N; i++) {
-    for (int j = 0; j < M; j++) {
-      for (int k = 0; k < O; k++) {
-        c[i*N+k] += a[i*N+j] * b[j*M+k];
+    for (int j = 0; j < N; j++) {
+      for (int k = 0; k < N; k++) {
+        c[i*N+k] += a[i*N+j] * b[j*N+k];
       }
     }
   }
 }
 
 void transposed(DTYPE* a, DTYPE* _b, DTYPE* c) {
-  print_matrix(_b, N, N);
+  print_matrix(_b);
   int* b = malloc(sizeof(DTYPE) * N * N);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
@@ -46,8 +46,8 @@ void transposed(DTYPE* a, DTYPE* _b, DTYPE* c) {
 
   // TODO: why is B zero?
   for (int i = 0; i < N; i++) {
-    for (int k = 0; k < O; k++) {
-      for (int j = 0; j < M; j++) {
+    for (int k = 0; k < N; k++) {
+      for (int j = 0; j < N; j++) {
         c[i*N+k] += a[i*N+j] * b[k*N+j];
         printf("%1f\n", b[k*N+j]);
       }
@@ -61,18 +61,18 @@ void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
 
 
 
-void rand_matrix(DTYPE* mat, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      mat[i*n+j] = (DTYPE) rand() / (DTYPE) RAND_MAX;
+void rand_matrix(DTYPE* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      mat[i*N+j] = (DTYPE) rand() / (DTYPE) RAND_MAX;
     }
   }
 }
 
-void zero_matrix(DTYPE* mat, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      mat[i*n+j] = 0;
+void zero_matrix(DTYPE* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      mat[i*N+j] = 0;
     }
   }
 }
@@ -92,37 +92,36 @@ int main() {
   DTYPE* c = malloc(sizeof(DTYPE) * N * N);
   DTYPE* ans = malloc(sizeof(DTYPE) * N * N);
 
-  rand_matrix(a, N, M);
-  rand_matrix(b, M, O);
+  rand_matrix(a);
+  rand_matrix(b);
 
   #ifdef DEBUG
-  print_matrix(a, N, N);
-  print_matrix(b, N, N);
+  print_matrix(a);
+  print_matrix(b);
   #endif
 
   clock_t begin, end;
 
   begin = clock();
   baseline(a, b, ans);
-  end = clock();
-  printf("baseline: %f s\n", (double) (end - begin) / CLOCKS_PER_SEC);
+  printf("baseline: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
 
   begin = clock();
   transposed(a, b, c);
   end = clock();
-  printf("transposed: %f s\n", (double) (end - begin) / CLOCKS_PER_SEC);
+  printf("transposed: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
   #ifdef DEBUG
   printf("transposed output:\n");
-  print_matrix(c, N, N);
+  print_matrix(c);
   #endif
   assert(check_matrix(c, ans));
-  zero_matrix(c, N, O);
+  zero_matrix(c);
 
 
   #ifdef DEBUG
-  print_matrix(a, N, M);
-  print_matrix(b, M, O);
-  print_matrix(ans, N, O);
+  print_matrix(a);
+  print_matrix(b);
+  print_matrix(ans);
   #endif
 
   return 0;
