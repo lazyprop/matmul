@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 
 #define DTYPE float
 
@@ -36,20 +36,17 @@ void baseline(DTYPE* a, DTYPE* b, DTYPE* c) {
 }
 
 void transposed(DTYPE* a, DTYPE* _b, DTYPE* c) {
-  print_matrix(_b);
-  int* b = malloc(sizeof(DTYPE) * N * N);
+  DTYPE* b = malloc(sizeof(DTYPE) * N * N);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       b[i*N+j] = _b[j*N+i];
     }
   }
 
-  // TODO: why is B zero?
   for (int i = 0; i < N; i++) {
     for (int k = 0; k < N; k++) {
       for (int j = 0; j < N; j++) {
         c[i*N+k] += a[i*N+j] * b[k*N+j];
-        printf("%1f\n", b[k*N+j]);
       }
     }
   }
@@ -100,7 +97,7 @@ int main() {
   print_matrix(b);
   #endif
 
-  clock_t begin, end;
+  clock_t begin;
 
   begin = clock();
   baseline(a, b, ans);
@@ -108,10 +105,8 @@ int main() {
 
   begin = clock();
   transposed(a, b, c);
-  end = clock();
   printf("transposed: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
   #ifdef DEBUG
-  printf("transposed output:\n");
   print_matrix(c);
   #endif
   assert(check_matrix(c, ans));
