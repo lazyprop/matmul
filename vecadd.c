@@ -4,7 +4,7 @@
 #include <time.h>
 
 #define DTYPE float
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #define N 16

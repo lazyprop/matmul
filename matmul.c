@@ -4,13 +4,15 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
+#include <x86intrin.h>
 
 //#define DEBUG
 
 #define DTYPE float
+#define ERR 1e-4
 
 #ifdef DEBUG
-#define N 3
+#define N 8
 #else
 #define N 1024
 #endif
@@ -41,7 +43,6 @@ void baseline(DTYPE* a, DTYPE* b, DTYPE* c) {
 }
 
 void transposed(DTYPE* a, DTYPE* b, DTYPE* c) {
-  transpose_matrix(b);
   for (int i = 0; i < N; i++) {
     for (int k = 0; k < N; k++) {
       for (int j = 0; j < N; j++) {
@@ -50,6 +51,25 @@ void transposed(DTYPE* a, DTYPE* b, DTYPE* c) {
     }
   }
 }
+
+void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
+  for (int i = 0; i < N; i++) {
+    for (int k = 0; k < N; k++) {
+      __m256 ans = _mm256_setzero_ps();
+      for (int j = 0; j < N; j += 8) {
+        __m256 x = _mm256_loadu_ps(&a[i*N+j]);
+        __m256 y = _mm256_loadu_ps(&b[k*N+j]);
+        ans = _mm256_fmadd_ps(x, y, ans);
+      }
+      DTYPE vec[8];
+      _mm256_storeu_ps(vec, ans);
+      for (int x = 0; x < 8; x++) {
+        c[i*N+k] += vec[x];
+      }
+    }
+  }
+}
+
 
 void transpose_matrix(DTYPE* mat) {
   for (int i = 0; i < N; i++) {
@@ -80,7 +100,11 @@ void zero_matrix(DTYPE* mat) {
 bool check_matrix(DTYPE* mat, DTYPE* ans) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      if (mat[i*N+j] != ans[i*N+j]) return false;
+      DTYPE diff = abs(mat[i*N+j] - ans[i*N+j]);
+      if (diff > ERR) {
+        printf("failed: answer does not match. difference: %2f\n", diff);
+        return false;
+      }
     }
   }
   return true;
@@ -106,9 +130,19 @@ int main() {
   baseline(a, b, ans);
   printf("baseline: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
 
+  transpose_matrix(b);
   begin = clock();
   transposed(a, b, c);
   printf("transposed: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
+  #ifdef DEBUG
+  print_matrix(c);
+  #endif
+  assert(check_matrix(c, ans));
+  zero_matrix(c);
+
+  begin = clock();
+  simd(a, b, c);
+  printf("simd: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
   #ifdef DEBUG
   print_matrix(c);
   #endif

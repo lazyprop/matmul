@@ -1,2 +1,9 @@
+CC=gcc -mavx -mfma
+
 vecadd: vecadd.c
-	gcc -mavx vecadd.c -o vecadd
+	$(CC) vecadd.c -o vecadd
+
+matmul: matmul.c
+	$(CC) matmul.c -o matmul
+
+
