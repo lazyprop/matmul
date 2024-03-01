@@ -78,6 +78,31 @@ void blocked(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
+void blocked_simd(DTYPE* a, DTYPE* b, DTYPE* c) {
+  for (int hblock = 0; hblock < N; hblock += BLOCK_SIZE) {
+    for (int vblock = 0; vblock < N; vblock += BLOCK_SIZE) {
+#pragma omp parallel for collapse(2)
+      for (int row = vblock; row < vblock + BLOCK_SIZE; row++) {
+        for (int col = hblock; col < hblock + BLOCK_SIZE; col++) {
+          __m256 ans = _mm256_setzero_ps();
+          for (int k = 0; k < N; k += 8) {
+            __m256 x = _mm256_loadu_ps(&a[row*N+k]);
+            __m256 y = _mm256_loadu_ps(&b[col*N+k]);
+            ans = _mm256_fmadd_ps(x, y, ans);
+          }
+          DTYPE vec[8];
+          _mm256_storeu_ps(vec, ans);
+          for (int x = 0; x < 8; x++) {
+            c[row*N+col] += vec[x];
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
 
 int main() {
   DTYPE* a = malloc(sizeof(DTYPE) * N * N);
@@ -111,6 +136,8 @@ int main() {
   transpose_matrix(b);
   test_program("blocked", blocked, a, b, c, ans);
   transpose_matrix(b);
+
+  test_program("blocked_simd", blocked_simd, a, b, c, ans);
 
   return 0;
 }
