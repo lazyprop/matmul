@@ -1,4 +1,11 @@
-#pragma once
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <omp.h>
+
+#include "matmul.h"
+#include "util.h"
 
 void transpose_matrix(DTYPE*);
 void print_matrix(DTYPE*);
