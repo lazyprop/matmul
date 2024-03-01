@@ -5,14 +5,16 @@
 #include <stdbool.h>
 #include <string.h>
 #include <x86intrin.h>
+#include <omp.h>
 
 //#define DEBUG
+
 
 #define DTYPE float
 #define ERR 1e-4
 
 #ifdef DEBUG
-#define N 8
+#define N 16
 #else
 #define N 1024
 #endif
@@ -21,16 +23,6 @@ void transpose_matrix(DTYPE* mat);
 void print_matrix(DTYPE* mat);
 void rand_matrix(DTYPE* mat);
 void zero_matrix(DTYPE* mat);
-
-void print_matrix(DTYPE* mat) {
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
-      printf("%.1f ", mat[i*N+j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
 
 void baseline(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int i = 0; i < N; i++) {
@@ -68,6 +60,31 @@ void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
       }
     }
   }
+}
+
+void blocked(DTYPE* a, DTYPE* b, DTYPE* c) {
+  // TODO remove
+  // fix indices
+  transpose_matrix(b);
+  int bsize = 32;
+  for (int hblock = 0; hblock < N; hblock += bsize) {
+    for (int vblock = 0; vblock < N; vblock += bsize) {
+      #pragma omp parallel for collapse(2)
+      for (int row = vblock; row < vblock + bsize; row++) {
+        for (int col = hblock; col < hblock + bsize; col++) {
+          for (int k = 0; k < N; k++) {
+            #ifdef DEBUG
+            printf("BLOCKED: adding (%d %d) * (%d %d) into (%d %d)\n",
+                   row, k, k, col, row, col);
+            #endif
+            c[row*N+col] += a[row*N+k] * b[k*N+col];
+          }
+        }
+      }
+    }
+  }
+  // TODO remove
+  transpose_matrix(b);
 }
 
 
@@ -110,6 +127,17 @@ bool check_matrix(DTYPE* mat, DTYPE* ans) {
   return true;
 }
 
+void print_matrix(DTYPE* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      printf("%.1f ", mat[i*N+j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+
 int main() {
   DTYPE* a = malloc(sizeof(DTYPE) * N * N);
   DTYPE* b = malloc(sizeof(DTYPE) * N * N);
@@ -148,6 +176,18 @@ int main() {
   #endif
   assert(check_matrix(c, ans));
   zero_matrix(c);
+
+  double tbegin = omp_get_wtime();
+  blocked(a, b, c);
+  printf("blocked: %.2f s\n",  omp_get_wtime() - tbegin);
+  #ifdef DEBUG
+  print_matrix(c);
+  printf("\n");
+  print_matrix(ans);
+  #endif
+  assert(check_matrix(c, ans));
+  zero_matrix(c);
+
 
 
   #ifdef DEBUG

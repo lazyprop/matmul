@@ -1,4 +1,4 @@
-CC=gcc -mavx -mfma
+CC=gcc -mavx -mfma -funroll-loops -ffast-math -fopenmp
 
 vecadd: vecadd.c
 	$(CC) vecadd.c -o vecadd
