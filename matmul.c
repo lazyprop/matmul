@@ -9,20 +9,18 @@
 
 //#define DEBUG
 
-
 #define DTYPE float
 #define ERR 1e-4
 
 #ifdef DEBUG
 #define N 16
+#define BLOCK_SIZE 4
 #else
 #define N 1024
+#define BLOCK_SIZE 32
 #endif
 
-void transpose_matrix(DTYPE* mat);
-void print_matrix(DTYPE* mat);
-void rand_matrix(DTYPE* mat);
-void zero_matrix(DTYPE* mat);
+#include "util.h"
 
 void baseline(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int i = 0; i < N; i++) {
@@ -63,78 +61,21 @@ void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
 }
 
 void blocked(DTYPE* a, DTYPE* b, DTYPE* c) {
-  // TODO remove
-  // fix indices
-  transpose_matrix(b);
-  int bsize = 32;
-  for (int hblock = 0; hblock < N; hblock += bsize) {
-    for (int vblock = 0; vblock < N; vblock += bsize) {
-      #pragma omp parallel for collapse(2)
-      for (int row = vblock; row < vblock + bsize; row++) {
-        for (int col = hblock; col < hblock + bsize; col++) {
+  for (int hblock = 0; hblock < N; hblock += BLOCK_SIZE) {
+    for (int vblock = 0; vblock < N; vblock += BLOCK_SIZE) {
+#pragma omp parallel for collapse(2)
+      for (int row = vblock; row < vblock + BLOCK_SIZE; row++) {
+        for (int col = hblock; col < hblock + BLOCK_SIZE; col++) {
           for (int k = 0; k < N; k++) {
-            #ifdef DEBUG
-            printf("BLOCKED: adding (%d %d) * (%d %d) into (%d %d)\n",
-                   row, k, k, col, row, col);
-            #endif
+            assert(row >= 0 && row < N);
+            assert(col >= 0 && col < N);
+            assert(k >= 0 && k < N);
             c[row*N+col] += a[row*N+k] * b[k*N+col];
           }
         }
       }
     }
   }
-  // TODO remove
-  transpose_matrix(b);
-}
-
-
-void transpose_matrix(DTYPE* mat) {
-  for (int i = 0; i < N; i++) {
-    for (int j = i; j < N; j++) {
-      DTYPE tmp = mat[j*N+i];
-      mat[j*N+i] = mat[i*N+j];
-      mat[i*N+j] = tmp;
-    }
-  }
-}
-
-void rand_matrix(DTYPE* mat) {
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
-      mat[i*N+j] = (DTYPE) rand() / (DTYPE) RAND_MAX;
-    }
-  }
-}
-
-void zero_matrix(DTYPE* mat) {
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
-      mat[i*N+j] = 0;
-    }
-  }
-}
-
-bool check_matrix(DTYPE* mat, DTYPE* ans) {
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
-      DTYPE diff = abs(mat[i*N+j] - ans[i*N+j]);
-      if (diff > ERR) {
-        printf("failed: answer does not match. difference: %2f\n", diff);
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-void print_matrix(DTYPE* mat) {
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
-      printf("%.1f ", mat[i*N+j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
 }
 
 
@@ -148,52 +89,28 @@ int main() {
   rand_matrix(b);
 
   #ifdef DEBUG
+  printf("a:\n");
   print_matrix(a);
+  printf("b:\n");
   print_matrix(b);
   #endif
 
-  clock_t begin;
-
-  begin = clock();
+  double begin = omp_get_wtime();
   baseline(a, b, ans);
-  printf("baseline: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
-
-  transpose_matrix(b);
-  begin = clock();
-  transposed(a, b, c);
-  printf("transposed: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
-  #ifdef DEBUG
-  print_matrix(c);
-  #endif
-  assert(check_matrix(c, ans));
-  zero_matrix(c);
-
-  begin = clock();
-  simd(a, b, c);
-  printf("simd: %f s\n", (double) (clock() - begin) / CLOCKS_PER_SEC);
-  #ifdef DEBUG
-  print_matrix(c);
-  #endif
-  assert(check_matrix(c, ans));
-  zero_matrix(c);
-
-  double tbegin = omp_get_wtime();
-  blocked(a, b, c);
-  printf("blocked: %.2f s\n",  omp_get_wtime() - tbegin);
-  #ifdef DEBUG
-  print_matrix(c);
-  printf("\n");
-  print_matrix(ans);
-  #endif
-  assert(check_matrix(c, ans));
-  zero_matrix(c);
-
-
-
+  printf("baseline: %.2f s\n", omp_get_wtime() - begin);
   #ifdef DEBUG
   printf("answer:\n");
   print_matrix(ans);
   #endif
+
+  zero_matrix(c);
+  transpose_matrix(b);
+  test_program("transposed", transposed, a, b, c, ans);
+  test_program("simd", simd, a, b, c, ans);
+
+  transpose_matrix(b);
+  test_program("blocked", blocked, a, b, c, ans);
+  transpose_matrix(b);
 
   return 0;
 }

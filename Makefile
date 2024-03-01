@@ -1,9 +1,11 @@
-CC=gcc -mavx -mfma -funroll-loops -ffast-math -fopenmp
+CC=gcc
+CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp
 
 vecadd: vecadd.c
-	$(CC) vecadd.c -o vecadd
+	$(CC) $(CFLAGS) vecadd.c -o vecadd
 
-matmul: matmul.c
-	$(CC) matmul.c -o matmul
+run: util.h matmul.c
+	$(CC) $(CFLAGS) matmul.c -o matmul
+	./matmul
 
 
