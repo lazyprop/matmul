@@ -2,7 +2,7 @@
 #define _MATMUL_H
 
 #define DTYPE float
-#define ERR 1e-4
+#define ERR 1e-3
 
 #ifdef DEBUG
 #define N 16

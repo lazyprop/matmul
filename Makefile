@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp
 
 default:
@@ -16,5 +16,8 @@ util.o: src/util.c
 bench: util.o matmul.o
 	$(CC) $(CFLAGS) bin/util.o bin/matmul.o src/bench.c -o bin/bench
 	bin/bench
+
+play: util.o matmul.o
+	$(CC) $(CFLAGS) bin/util bin/matmul.o src/play.c -S
 
 

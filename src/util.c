@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <omp.h>
+#include <math.h>
 
 #include "matmul.h"
 #include "util.h"
@@ -44,7 +45,7 @@ void zero_matrix(DTYPE* mat) {
 bool check_matrix(DTYPE* mat, DTYPE* ans) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      DTYPE diff = abs(mat[i*N+j] - ans[i*N+j]);
+      DTYPE diff = fabsf(mat[i*N+j] - ans[i*N+j]);
       if (diff > ERR) {
         printf("failed: answer does not match. difference: %2f at (%d, %d)\n",
                diff, i, j);
