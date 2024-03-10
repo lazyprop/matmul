@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp
+CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp -g
 
 default:
 	mkdir -p bin
@@ -18,6 +18,7 @@ bench: util.o matmul.o
 	bin/bench
 
 play: util.o matmul.o
-	$(CC) $(CFLAGS) bin/util bin/matmul.o src/play.c -S
+	$(CC) $(CFLAGS) bin/util.o bin/matmul.o src/play.c -o bin/play
+	bin/play
 
 

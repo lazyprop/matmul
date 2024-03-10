@@ -59,7 +59,7 @@ bool check_matrix(DTYPE* mat, DTYPE* ans) {
 void print_matrix(DTYPE* mat) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      printf("%.1f ", mat[i*N+j]);
+      printf("%.2f ", mat[i*N+j]);
     }
     printf("\n");
   }
@@ -70,7 +70,7 @@ void test_program(const char* name, void (*func)(DTYPE*, DTYPE*, DTYPE*),
                   DTYPE* a, DTYPE* b, DTYPE* c, DTYPE* ans) {
   double begin = omp_get_wtime();
   func(a, b, c);
-  printf("%s: %.2f s\n", name, omp_get_wtime() - begin);
+  printf("%s: %.0f ms\n", name, 1000 * (omp_get_wtime() - begin));
   #ifdef DEBUG
   print_matrix(c);
   printf("ans:\n");

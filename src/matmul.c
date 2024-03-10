@@ -1,5 +1,6 @@
 #include <x86intrin.h>
 #include <omp.h>
+#include <stdio.h>
 
 #include "matmul.h"
 #include "util.h"
@@ -24,6 +25,25 @@ void transposed(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
+/* Using Tiling
+ * Each block fits into L1 cache
+ */
+void tiled(DTYPE* a, DTYPE* b, DTYPE* c) {
+  for (int iblock = 0; iblock < N; iblock += BLOCK_SIZE) {
+    for (int kblock = 0; kblock < N; kblock += BLOCK_SIZE) {
+      for (int jblock = 0; jblock < N; jblock += BLOCK_SIZE) {
+        for (int i = iblock; i < iblock + BLOCK_SIZE; i++) {
+          for (int k = kblock; k < kblock + BLOCK_SIZE; k++) {
+            for (int j = jblock; j < jblock + BLOCK_SIZE; j++) {
+              c[i*N+k] += a[i*N+j] * b[j*N+k];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int i = 0; i < N; i++) {
     for (int k = 0; k < N; k++) {
@@ -42,7 +62,9 @@ void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
-void blocked(DTYPE* a, DTYPE* b, DTYPE* c) {
+
+
+void parallel(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int hblock = 0; hblock < N; hblock += BLOCK_SIZE) {
     for (int vblock = 0; vblock < N; vblock += BLOCK_SIZE) {
 #pragma omp parallel for collapse(2)
@@ -57,7 +79,7 @@ void blocked(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
-void blocked_simd(DTYPE* a, DTYPE* b, DTYPE* c) {
+void parallel_simd(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int hblock = 0; hblock < N; hblock += BLOCK_SIZE) {
     for (int vblock = 0; vblock < N; vblock += BLOCK_SIZE) {
 #pragma omp parallel for collapse(2)
@@ -79,4 +101,3 @@ void blocked_simd(DTYPE* a, DTYPE* b, DTYPE* c) {
     }
   }
 }
-

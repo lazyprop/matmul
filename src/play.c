@@ -17,7 +17,7 @@ int main() {
   rand_matrix(a);
   rand_matrix(b);
 
-  simd(a, b, c);
+  test_program("tiled", tiled, a, b, c, c);
 
   return 0;
 }

@@ -27,7 +27,7 @@ int main() {
 
   double begin = omp_get_wtime();
   baseline(a, b, ans);
-  printf("baseline: %.2f s\n", omp_get_wtime() - begin);
+  printf("baseline: %.0f ms\n", 1000 * (omp_get_wtime() - begin));
   #ifdef DEBUG
   printf("answer:\n");
   print_matrix(ans);
@@ -39,10 +39,11 @@ int main() {
   test_program("simd", simd, a, b, c, ans);
 
   transpose_matrix(b);
-  test_program("blocked", blocked, a, b, c, ans);
+  test_program("tiled", tiled, a, b, c, ans);
+  test_program("parallel", parallel, a, b, c, ans);
   transpose_matrix(b);
 
-  test_program("blocked_simd", blocked_simd, a, b, c, ans);
+  test_program("parallel_simd", parallel_simd, a, b, c, ans);
 
   return 0;
 }
