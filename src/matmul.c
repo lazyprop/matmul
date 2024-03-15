@@ -25,9 +25,6 @@ void transposed(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
-/* Using Tiling
- * Each block fits into L1 cache
- */
 void tiled(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int iblock = 0; iblock < N; iblock += BLOCK_SIZE) {
     for (int kblock = 0; kblock < N; kblock += BLOCK_SIZE) {

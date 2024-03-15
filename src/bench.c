@@ -27,7 +27,7 @@ int main() {
 
   double begin = omp_get_wtime();
   baseline(a, b, ans);
-  printf("baseline: %.0f ms\n", 1000 * (omp_get_wtime() - begin));
+  printf("baseline: %.1f GFLOPS/s\n", time_to_gflops_s(omp_get_wtime() - begin));
   #ifdef DEBUG
   printf("answer:\n");
   print_matrix(ans);

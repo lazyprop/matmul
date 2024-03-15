@@ -66,11 +66,21 @@ void print_matrix(DTYPE* mat) {
   printf("\n");
 }
 
+double time_to_gflops_s(const double seconds) {
+  double total_flops = 2.0 * N * N * N;
+  double gflops_second = total_flops / (seconds * 1e9);
+  return gflops_second;
+}
+
 void test_program(const char* name, void (*func)(DTYPE*, DTYPE*, DTYPE*),
                   DTYPE* a, DTYPE* b, DTYPE* c, DTYPE* ans) {
   double begin = omp_get_wtime();
   func(a, b, c);
-  printf("%s: %.0f ms\n", name, 1000 * (omp_get_wtime() - begin));
+  double seconds = omp_get_wtime() - begin;
+  #ifdef DEBUG
+  printf("%s: %.3f s\n", name, seconds);
+  #endif
+  printf("%s: %.1f GFLOPS/s\n", name, time_to_gflops_s(seconds));
   #ifdef DEBUG
   print_matrix(c);
   printf("ans:\n");
