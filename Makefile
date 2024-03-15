@@ -1,24 +1,18 @@
-CC=clang
-CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp -g
+CXX=clang++
+CFLAGS=-march=native -mavx -mfma -funroll-loops -ffast-math -fopenmp -g
 
 default:
 	mkdir -p bin
 
-vecadd: vecadd.c
-	$(CC) $(CFLAGS) vecadd.c -o vecadd
+vecadd: vecadd.cpp
+	$(CXX) $(CFLAGS) vecadd.cpp -o vecadd
 
-matmul.o: src/matmul.c
-	$(CC) $(CFLAGS) -c src/matmul.c -o bin/matmul.o
-
-util.o: src/util.c
-	$(CC) $(CFLAGS) -c src/util.c -o bin/util.o
-
-bench: util.o matmul.o
-	$(CC) $(CFLAGS) bin/util.o bin/matmul.o src/bench.c -o bin/bench
+bench:
+	$(CXX) $(CFLAGS) src/bench.cpp -o bin/bench
 	bin/bench
 
-play: util.o matmul.o
-	$(CC) $(CFLAGS) bin/util.o bin/matmul.o src/play.c -o bin/play
+play:
+	$(CXX) $(CFLAGS) src/play.cpp -o bin/play
 	bin/play
 
 

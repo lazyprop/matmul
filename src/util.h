@@ -1,15 +1,96 @@
-#ifndef _UTIL_H
-#define _UTIL_H
+#ifndef UTIL_H
+#define UTIL_H
 
-#include <stdbool.h>
 
-void transpose_matrix(DTYPE*);
-void print_matrix(DTYPE*);
-void rand_matrix(DTYPE*);
-void zero_matrix(DTYPE*);
-bool check_matrix(DTYPE*, DTYPE*);
-void test_program(const char* name, void (*func)(DTYPE*, DTYPE*, DTYPE*),
-                  DTYPE* a, DTYPE* b, DTYPE* c, DTYPE* ans);
-double time_to_gflops_s(double);
+#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <omp.h>
+
+#include "matmul.h"
+
+template <typename T, size_t N>
+void transpose_matrix(T* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = i; j < N; j++) {
+      T tmp = mat[j*N+i];
+      mat[j*N+i] = mat[i*N+j];
+      mat[i*N+j] = tmp;
+    }
+  }
+}
+
+template <typename T, size_t N>
+void rand_matrix(T* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      mat[i*N+j] = (T) rand() / (T) RAND_MAX;
+    }
+  }
+}
+
+template <typename T, size_t N>
+void zero_matrix(T* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      mat[i*N+j] = 0;
+    }
+  }
+}
+
+template <typename T, size_t N>
+bool check_matrix(T* mat, T* ans) {
+  const T ERR = 1e3;
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      T diff = fabsf(mat[i*N+j] - ans[i*N+j]);
+      if (diff > ERR) {
+        std::cout << "failed: answer does not match. difference: "
+          //<< "%2f at (%d, %d)\n",
+                  << diff << " at (" << i << " " << j << ")\n";
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+template <typename T, size_t N>
+void print_matrix(T* mat) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+     std::cout << mat[i*N+j] << ' ';
+    }
+    std::cout << '\n';
+  }
+  std::cout << '\n';
+}
+
+template <size_t N>
+double time_to_gflops_s(const double seconds) {
+  double total_flops = 2.0 * N * N * N;
+  double gflops_second = total_flops / (seconds * 1e9);
+  return gflops_second;
+}
+
+template <typename T, size_t N>
+void test_program(const char* name, void (*func)(T*, T*, T*),
+                  T* a, T* b, T* c, T* ans) {
+  double begin = omp_get_wtime();
+  func(a, b, c);
+  double seconds = omp_get_wtime() - begin;
+  #ifdef DEBUG
+  std::cout << name << " " << seconds << '\n';
+  #endif
+  std::cout << name << ": " << time_to_gflops_s<N>(omp_get_wtime() - begin)
+            << " GFLOPS/s\n";
+  #ifdef DEBUG
+  print_matrix(c);
+  std::cout << "answer:\n";
+  print_matrix(ans);
+  #endif
+  assert((check_matrix<float, N>(c, ans)));
+  zero_matrix<T, N>(c);
+}
 
 #endif
