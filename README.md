@@ -1,4 +1,4 @@
-# Fast Linear Algebra in C
+# Fast Linear Algebra in C++
 
 Making linear algebra go brrr.
 
