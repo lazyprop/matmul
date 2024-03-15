@@ -72,6 +72,58 @@ void kernel_2x2(T* a, T* b, T* c, int x, int y) {
   c[(x+1)*N+y+1] = c11;
 }
 
+template<typename T, size_t N, size_t B>
+void kernel(T* a, T* b, T* c, int x, int y) {
+  T cx[B][B] = {};
+  for (int k = 0; k < N; k++) {
+    T ax[B], bx[B];
+    for (int i = 0; i < B; i++) ax[i] = a[(x+i)*N+k];
+    for (int j = 0; j < B; j++) bx[j] = b[k*N+y+j];
+    for (int i = 0; i < B; i++) {
+      for (int j = 0; j < B; j++) {
+        cx[i][j] += ax[i] * bx[j];
+      }
+    }
+  }
+  for (int i = 0; i < B; i++) {
+    for (int j = 0; j < B; j++) {
+      c[(x+i)*N+y+j] = cx[i][j];
+    }
+  }
+}
+
+template<typename T, size_t N, size_t B>
+void kernel_simd(T* a, T* b, T* c, int x, int y) {
+  T cx[B][B] = {};
+  for (int k = 0; k < N; k++) {
+    T ax[B], bx[B];
+    for (int i = 0; i < B; i++) ax[i] = a[(x+i)*N+k];
+    for (int j = 0; j < B; j++) bx[j] = b[k*N+y+j];
+    for (int i = 0; i < B; i++) {
+      for (int j = 0; j < B; j++) {
+        cx[i][j] += ax[i] * bx[j];
+      }
+    }
+  }
+  for (int i = 0; i < B; i++) {
+    for (int j = 0; j < B; j++) {
+      c[(x+i)*N+y+j] = cx[i][j];
+    }
+  }
+}
+
+
+
+template<typename T, size_t N, size_t B>
+void blocked(T* a, T* b, T* c) {
+  for (int i = 0; i < N; i += B) {
+    for (int j = 0; j < N; j += B) {
+      kernel<T, N, B>(a, b, c, i, j);
+    }
+  }
+}
+
+
 template<typename T, size_t N>
 void blocked_2x2(T* a, T* b, T* c) {
   for (int i = 0; i < N; i += 2) {

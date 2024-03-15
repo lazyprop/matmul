@@ -38,13 +38,15 @@ int main() {
   transpose_matrix<float, N>(b);
   test_program<float, N>("transposed", transposed<float, N>, a, b, c, ans);
   test_program<float, N>("simd", simd<float, N>, a, b, c, ans);
-
   transpose_matrix<float, N>(b);
-  test_program<float, N>("tiled", tiled<float, N>, a, b, c, ans);
+
   test_program<float, N>("blocked_2x2", blocked_2x2<float, N>, a, b, c, ans);
+  test_program<float, N>("blocked_8x8", blocked<float, N, 8>, a, b, c, ans);
+  test_program<float, N>("blocked_16x16", blocked<float, N, 16>, a, b, c, ans);
+
+
   test_program<float, N>("parallel", parallel<float, N>, a, b, c, ans);
   transpose_matrix<float, N>(b);
-
   test_program<float, N>("parallel_simd", parallel_simd<float, N>, a, b, c, ans);
 
   return 0;
