@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp -g -O3
+CFLAGS=-mavx -mfma -funroll-loops -ffast-math -fopenmp -g
 
 default:
 	mkdir -p bin

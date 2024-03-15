@@ -19,5 +19,6 @@ void tiled(DTYPE* a, DTYPE* b, DTYPE* c);
 void simd(DTYPE* a, DTYPE* b, DTYPE* c);
 void parallel(DTYPE* a, DTYPE* b, DTYPE* c);
 void parallel_simd(DTYPE* a, DTYPE* b, DTYPE* c);
+void blocked_2x2(DTYPE* a, DTYPE* b, DTYPE* c);
 
 #endif

@@ -40,6 +40,7 @@ int main() {
 
   transpose_matrix(b);
   test_program("tiled", tiled, a, b, c, ans);
+  test_program("blocked_2x2", blocked_2x2, a, b, c, ans);
   test_program("parallel", parallel, a, b, c, ans);
   transpose_matrix(b);
 

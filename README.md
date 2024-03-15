@@ -8,6 +8,7 @@ Making linear algebra go brrr.
 | transposed    | 0.7                  | 30.7              |
 | simd          | 2.6                  | 12.5              |
 | tiled         | 0.7                  | 0.3               |
+| blocked_2x2   | 1.4                  | 1.4               |
 | parallel      | 2.7                  | 1.3               |
 | parallel_simd | 18.8                 | 96.9              |
 

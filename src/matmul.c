@@ -41,6 +41,38 @@ void tiled(DTYPE* a, DTYPE* b, DTYPE* c) {
   }
 }
 
+/*
+ * compute a 2x2 block of C = AB whose top-left corner is at (x, y)
+ * maximize register use by using many accumulators
+ * then write to memory in the end
+ */
+
+void kernel_2x2(DTYPE* a, DTYPE* b, DTYPE* c, int x, int y) {
+  // zero accumulators
+  DTYPE c00 = 0, c01 = 0, c10 = 0, c11 = 0;
+  for (int k = 0; k < N; k++) {
+    // read the rows and columns
+    DTYPE a0 = a[x*N+k], a1 = a[(x+1)*N+k];
+    DTYPE b0 = b[k*N+y], b1 = b[k*N+y+1];
+    c00 += a0 * b0;
+    c01 += a0 * b1;
+    c10 += a1 * b0;
+    c11 += a1 * b1;
+  }
+  c[x*N+y] = c00;
+  c[x*N+y+1] = c01;
+  c[(x+1)*N+y] = c10;
+  c[(x+1)*N+y+1] = c11;
+}
+
+void blocked_2x2(DTYPE* a, DTYPE* b, DTYPE* c) {
+  for (int i = 0; i < N; i += 2) {
+    for (int j = 0; j < N; j += 2) {
+      kernel_2x2(a, b, c, i, j);
+    }
+  }
+}
+
 void simd(DTYPE* a, DTYPE* b, DTYPE* c) {
   for (int i = 0; i < N; i++) {
     for (int k = 0; k < N; k++) {
