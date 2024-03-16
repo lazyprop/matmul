@@ -1,5 +1,5 @@
 CXX=clang++
-CFLAGS=-march=native -mavx -mfma -funroll-loops -ffast-math -fopenmp -g
+CFLAGS=-march=native -mavx -mfma -funroll-loops -ffast-math -fopenmp -g -O3
 
 default:
 	mkdir -p bin

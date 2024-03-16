@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <cmath>
 #include <omp.h>
@@ -39,8 +40,8 @@ void zero_matrix(T* mat) {
 }
 
 template <typename T, size_t N>
-bool check_matrix(T* mat, T* ans) {
-  const T ERR = 1e3;
+int check_matrix(T* mat, T* ans) {
+  const T ERR = 1e-2;
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       T diff = fabsf(mat[i*N+j] - ans[i*N+j]);
@@ -48,8 +49,8 @@ bool check_matrix(T* mat, T* ans) {
         std::cout << "failed: answer does not match. difference: "
           //<< "%2f at (%d, %d)\n",
                   << diff << " at (" << i << " " << j << ")\n";
-        return false;
       }
+      assert(diff < ERR);
     }
   }
   return true;
@@ -57,6 +58,7 @@ bool check_matrix(T* mat, T* ans) {
 
 template <typename T, size_t N>
 void print_matrix(T* mat) {
+  std::cout << std::fixed << std::setprecision(2);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
      std::cout << mat[i*N+j] << ' ';
@@ -76,6 +78,7 @@ double time_to_gflops_s(const double seconds) {
 template <typename T, size_t N>
 void test_program(const char* name, void (*func)(T*, T*, T*),
                   T* a, T* b, T* c, T* ans) {
+  zero_matrix<T, N>(c);
   double begin = omp_get_wtime();
   func(a, b, c);
   double seconds = omp_get_wtime() - begin;
@@ -89,8 +92,7 @@ void test_program(const char* name, void (*func)(T*, T*, T*),
   std::cout << "answer:\n";
   print_matrix(ans);
   #endif
-  assert((check_matrix<float, N>(c, ans)));
-  zero_matrix<T, N>(c);
+  check_matrix<float, N>(c, ans);
 }
 
 #endif
