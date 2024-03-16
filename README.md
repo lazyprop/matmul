@@ -10,6 +10,7 @@ Making linear algebra go brrr.
 | blocked_2x2             | 1.4                   | 1.4                |
 | blocked_16x16           | 0.80                  | 18.19              |
 | blocked2_16x16          | 0.72                  | 20.96              |
+| blocked3_8x8            | 2.26                  | 31.57              |
 | parallel                | 2.7                   | 1.3                |
 | parallel_tranposed_simd | 18.8                  | 96.9               |
 

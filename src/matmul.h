@@ -148,12 +148,22 @@ void kernel2(T* a, T* b, T* c, int x, int y) {
   }
 }
 
+template<typename T, size_t N, size_t B>
+void blocked2(T* a, T* b, T* c) {
+  #pragma o
+  for (int i = 0; i < N; i += B) {
+    for (int j = 0; j < N; j += B) {
+      kernel2<T, N, B>(a, b, c, i, j);
+    }
+  }
+}
 
 /*
  * Unpack an array of __m256 `from` to 8x8 submatrix at `to[x][y]`
+ * N is the side length of `to`
  */
 template<typename T, size_t N>
-inline void unpack_8x8(T* to, __m256* from, int x, int y) {
+inline void unpack_from_vecs(T* to, __m256* from, int x, int y) {
   for (int k = 0; k < 8; k++) {
     _mm256_store_ps(&to[(x+k)*N+y], from[k]);
   }
@@ -163,94 +173,43 @@ inline void unpack_8x8(T* to, __m256* from, int x, int y) {
  * Pack a 8x8 submatrix `from` at (x, y) to an array of _m256
  */
 template<typename T, size_t N>
-inline void pack_8x8(__m256* to, T* from, int x, int y) {
-  for (int i = 0; i < 8; i++) {
-    to[i] = _mm256_load_ps(&from[i*N]);
+inline void pack_into_vecs(__m256* to, T* from, int x, int y) {
+  for (int k = 0; k < 8; k++) {
+    to[k] = _mm256_load_ps(&from[(x+k)*N+y]);
   }
 }
 
-/*
- * Pack a 8x8 submatrix `from` at (x, y) to an array of _m256
- */
-template<typename T, size_t N>
-inline void pack_8x8_transpose(__m256* to, T* _from, int x, int y) {
-  alignas(64) T from[8*8];
-  pack_transpose<float, 8, 8>(from, _from, x, y);
-  for (int i = 0; i < 8; i++) {
-    to[i] = _mm256_load_ps(&from[i*N]);
-  }
-}
 
 template<typename T, size_t N, size_t B>
 void kernel_8x8(T* a, T* b, T* c, int x, int y) {
-  assert(B == 8);
   alignas(64) T ax[8*8];
   __m256 bv[8], cv[8];
   for (int k = 0; k < 8; k++) cv[k] = _mm256_setzero_ps();
   for (int zz = 0; zz < N; zz += B) {
     pack<T, N, 8>(ax, a, x, zz);
-    //std::cout << "Ax:\n";
-    //print_matrix<float, 8>(ax);
-    pack_8x8<T, N>(bv, b, zz, y);
+    pack_into_vecs<T, N>(bv, b, zz, y);
     // calculate product of submatrces Ax and Bx here
     for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 8; j++) {
-        // broadcast ax[i][j]
         alignas(64) const T _alpha = ax[i*8+j];
         __m256 alpha = _mm256_broadcast_ss(&_alpha);
-        // cv[i] += alpha (broadcast) * b[j]
         cv[i] = _mm256_fmadd_ps(alpha, bv[j], cv[i]);
       }
     }
   }
   // store cv[] into c
-  unpack_8x8<float, N>(c, cv, x, y);
-  alignas(64) T cx[8*8];
-  unpack_8x8<float, N>(cx, cv, 0, 0);
-  std::cout << "Cx: " << x << " " << y << "\n";
-  print_matrix<float, 8>(cx);
-}
-
-template<typename T, size_t N, size_t B>
-void kernel2_8x8(T* a, T* b, T* c, int x, int y) {
-  assert(B == 8);
-  __m256 cv[8];
-  for (int k = 0; k < 8; k++) cv[k] = _mm256_setzero_ps();
-  for (int i = 0; i < 8; i++) {
-    for (int k = 0; k < N; k++) {
-      const T _alpha = a[(x+i)*N+k];
-      __m256 alpha = _mm256_broadcast_ss(&_alpha);
-      for (int j = 0; j < 8; j++) {
-      }
-    }
-  }
-  // store cv[] into c
-  unpack_8x8<float, N>(c, cv, x, y);
-  alignas(64) T cx[8*8];
-  unpack_8x8<float, N>(cx, cv, 0, 0);
-  std::cout << "Cx: " << x << " " << y << "\n";
-  print_matrix<float, 8>(cx);
+  unpack_from_vecs<float, N>(c, cv, x, y);
 }
 
 template<typename T, size_t N, size_t B>
 void blocked3(T* a, T* b, T* c) {
   for (int i = 0; i < N; i += B) {
     for (int j = 0; j < N; j += B) {
-      kernel2_8x8<T, N, B>(a, b, c, i, j);
+      kernel_8x8<T, N, B>(a, b, c, i, j);
+      //print_matrix<float, N>(c);
     }
   }
 }
-
-template<typename T, size_t N, size_t B>
-void blocked2(T* a, T* b, T* c) {
-  for (int i = 0; i < N; i += B) {
-    for (int j = 0; j < N; j += B) {
-      kernel2<T, N, B>(a, b, c, i, j);
-    }
-  }
-}
-
-
 
 template<typename T, size_t N>
 void blocked_2x2(T* a, T* b, T* c) {

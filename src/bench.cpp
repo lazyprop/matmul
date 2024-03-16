@@ -44,6 +44,7 @@ int main() {
   test_program<float, N>("blocked_16x16", blocked<float, N, 16>, a, b, c, ans);
 
   test_program<float, N>("blocked2_16x16", blocked2<float, N, 16>, a, b, c, ans);
+  test_program<float, N>("blocked3_8x8", blocked3<float, N, 8>, a, b, c, ans);
 
   test_program<float, N>("parallel", parallel<float, N>, a, b, c, ans);
   transpose_matrix<float, N>(b);
