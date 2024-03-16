@@ -7,10 +7,10 @@
 int main() {
   const int N = 16;
 
-  float* a = static_cast<float*>(std::aligned_alloc(64, sizeof(float) * N * N));
-  float* b = static_cast<float*>(std::aligned_alloc(64, sizeof(float) * N * N));
-  float* c = static_cast<float*>(std::aligned_alloc(64, sizeof(float) * N * N));
-  float* ans = static_cast<float*>(std::aligned_alloc(64, sizeof(float) * N * N));
+  float* a = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
+  float* b = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
+  float* c = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
+  float* ans = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
 
   rand_matrix<float, N>(a);
   rand_matrix<float, N>(b);
@@ -51,7 +51,7 @@ int main() {
 
 int test() {
   const int N = 16;
-  float* mat = static_cast<float*>(std::aligned_alloc(64, sizeof(float)*N*N));
+  float* mat = static_cast<float*>(std::aligned_alloc(32, sizeof(float)*N*N));
   rand_matrix<float, N>(mat);
   print_matrix<float, N>(mat);
 
@@ -63,7 +63,7 @@ int test() {
   */
   pack_8x8<float, N>(rows, mat, 0, 0);
 
-  float* mat2 = static_cast<float*>(std::aligned_alloc(64, sizeof(float)*N*N));
+  float* mat2 = static_cast<float*>(std::aligned_alloc(32, sizeof(float)*N*N));
   /*
   for (int k = 0; k < 8; k++) {
     _mm256_store_ps(&mat2[k*8], rows[k]);

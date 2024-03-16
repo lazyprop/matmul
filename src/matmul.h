@@ -164,37 +164,71 @@ void blocked2(T* a, T* b, T* c) {
  */
 template<typename T, size_t N>
 inline void unpack_from_vecs(T* to, __m256* from, int x, int y) {
-  for (int k = 0; k < 8; k++) {
-    _mm256_store_ps(&to[(x+k)*N+y], from[k]);
-  }
+  T* to_ptr = &to[x*N+y];
+  _mm256_store_ps(&to_ptr[0*N], from[0]);
+  _mm256_store_ps(&to_ptr[1*N], from[1]);
+  _mm256_store_ps(&to_ptr[2*N], from[2]);
+  _mm256_store_ps(&to_ptr[3*N], from[3]);
+  _mm256_store_ps(&to_ptr[4*N], from[4]);
+  _mm256_store_ps(&to_ptr[5*N], from[5]);
+  _mm256_store_ps(&to_ptr[6*N], from[6]);
+  _mm256_store_ps(&to_ptr[7*N], from[7]);
 }
 
 /*
  * Pack a 8x8 submatrix `from` at (x, y) to an array of _m256
+ * N is the side length of `from`
  */
 template<typename T, size_t N>
-inline void pack_into_vecs(__m256* to, T* from, int x, int y) {
-  for (int k = 0; k < 8; k++) {
-    to[k] = _mm256_load_ps(&from[(x+k)*N+y]);
-  }
+inline void pack_into_vecs(__m256* to, T* _from, int x, int y) {
+  T from[8*8];
+  pack<float, N, 8>(from, _from, x, y);
+  T* from_ptr = &from[0];
+  to[0] = _mm256_load_ps(&from_ptr[0*8]);
+  to[1] = _mm256_load_ps(&from_ptr[1*8]);
+  to[2] = _mm256_load_ps(&from_ptr[2*8]);
+  to[3] = _mm256_load_ps(&from_ptr[3*8]);
+  to[4] = _mm256_load_ps(&from_ptr[4*8]);
+  to[5] = _mm256_load_ps(&from_ptr[5*8]);
+  to[6] = _mm256_load_ps(&from_ptr[6*8]);
+  to[7] = _mm256_load_ps(&from_ptr[7*8]);
 }
 
 
 template<typename T, size_t N, size_t B>
 void kernel_8x8(T* a, T* b, T* c, int x, int y) {
-  alignas(64) T ax[8*8];
+  alignas(32) T ax[8*8];
   __m256 bv[8], cv[8];
-  for (int k = 0; k < 8; k++) cv[k] = _mm256_setzero_ps();
+  cv[0] = _mm256_setzero_ps();
+  cv[1] = _mm256_setzero_ps();
+  cv[2] = _mm256_setzero_ps();
+  cv[3] = _mm256_setzero_ps();
+  cv[4] = _mm256_setzero_ps();
+  cv[5] = _mm256_setzero_ps();
+  cv[6] = _mm256_setzero_ps();
+  cv[7] = _mm256_setzero_ps();
   for (int zz = 0; zz < N; zz += B) {
     pack<T, N, 8>(ax, a, x, zz);
     pack_into_vecs<T, N>(bv, b, zz, y);
     // calculate product of submatrces Ax and Bx here
     for (int i = 0; i < 8; i++) {
-      for (int j = 0; j < 8; j++) {
-        alignas(64) const T _alpha = ax[i*8+j];
-        __m256 alpha = _mm256_broadcast_ss(&_alpha);
-        cv[i] = _mm256_fmadd_ps(alpha, bv[j], cv[i]);
-      }
+      __m256 alpha;
+      alpha = _mm256_broadcast_ss(&ax[i*8+0]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[0], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+1]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[1], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+2]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[2], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+3]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[3], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+4]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[4], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+5]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[5], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+6]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[6], cv[i]);
+      alpha = _mm256_broadcast_ss(&ax[i*8+7]);
+      cv[i] = _mm256_fmadd_ps(alpha, bv[7], cv[i]);
     }
   }
   // store cv[] into c

@@ -78,14 +78,14 @@ double time_to_gflops_s(const double seconds) {
 template <typename T, size_t N>
 void test_program(const char* name, void (*func)(T*, T*, T*),
                   T* a, T* b, T* c, T* ans) {
-  zero_matrix<T, N>(c);
-  double begin = omp_get_wtime();
-  func(a, b, c);
-  double seconds = omp_get_wtime() - begin;
-  #ifdef DEBUG
-  std::cout << name << " " << seconds << '\n';
-  #endif
-  std::cout << name << ": " << time_to_gflops_s<N>(omp_get_wtime() - begin)
+  double seconds = 0;
+  for (int i = 0; i < 100; i++) {
+    zero_matrix<T, N>(c);
+    double begin = omp_get_wtime();
+    func(a, b, c);
+    seconds += omp_get_wtime() - begin;
+  }
+  std::cout << name << ": " << time_to_gflops_s<N>(seconds / 100)
             << " GFLOPS/s\n";
   #ifdef DEBUG
   print_matrix(c);
