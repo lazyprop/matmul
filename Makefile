@@ -15,13 +15,16 @@ bench:
 play:
 	$(CXX) $(CFLAGS) src/play.cpp -o bin/play
 
-run: play
-	bin/play
+layered:
+	$(CXX) $(CFLAGS) src/layered.cpp -o bin/layered
+
+run: layered
+	bin/layered
 
 gandalf: src/gandalf.cc
 	g++ src/gandalf.cc -O3 -march=native -o bin/gandalf
 
-perf: play gandalf
-	perf stat -e $(PERFFLAGS) bin/play
+perf: play gandalf layered
+	perf stat -e $(PERFFLAGS) bin/layered
 	perf stat -e $(PERFFLAGS) bin/gandalf
 
