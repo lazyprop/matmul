@@ -79,13 +79,14 @@ template <typename T, size_t N>
 void test_program(const char* name, void (*func)(T*, T*, T*),
                   T* a, T* b, T* c, T* ans) {
   double seconds = 0;
-  for (int i = 0; i < 100; i++) {
+  int runs = 5;
+  for (int i = 0; i < runs; i++) {
     zero_matrix<T, N>(c);
     double begin = omp_get_wtime();
     func(a, b, c);
     seconds += omp_get_wtime() - begin;
   }
-  std::cout << name << ": " << time_to_gflops_s<N>(seconds / 100)
+  std::cout << name << ": " << time_to_gflops_s<N>(seconds / runs)
             << " GFLOPS/s\n";
   #ifdef DEBUG
   print_matrix(c);
