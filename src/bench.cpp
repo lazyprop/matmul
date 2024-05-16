@@ -3,6 +3,8 @@
 #include <omp.h>
 
 #include "matmul.h"
+#include "goto.h"
+#include "layered.h"
 #include "util.h"
 
 int main() {
@@ -15,6 +17,8 @@ int main() {
 
   rand_matrix<float, N>(a);
   rand_matrix<float, N>(b);
+  zero_matrix<float, N>(c);
+  zero_matrix<float, N>(ans);
 
   #ifdef DEBUG
   std::cout << "a:\n";
@@ -27,22 +31,25 @@ int main() {
 
   test_program<float, N>("baseline", baseline<float, N>, a, b, ans, ans);
 
-  zero_matrix<float, N>(c);
   transpose_matrix<float, N>(b);
-  test_program<float, N>("transposed", transposed<float, N>, a, b, c, ans);
   test_program<float, N>("transpose_simd", transpose_simd<float, N>, a, b, c, ans);
   transpose_matrix<float, N>(b);
 
-  //test_program<float, N>("blocked_2x2", blocked_2x2<float, N>, a, b, c, ans);
-  //test_program<float, N>("blocked_16x16", blocked<float, N, 16>, a, b, c, ans);
-
-  //test_program<float, N>("blocked2_16x16", blocked2<float, N, 16>, a, b, c, ans);
   test_program<float, N>("blocked3_8x8", blocked3<float, N, 8>, a, b, c, ans);
 
   //test_program<float, N>("parallel", parallel<float, N>, a, b, c, ans);
+
+  zero_matrix<float, N>(c);
+  test_program<float, N>("goto2", goto2<float, N>, a, b, c, ans);
+  zero_matrix<float, N>(c);
+  test_program<float, N>("goto3", goto3<float, N>, a, b, c, ans);
+  zero_matrix<float, N>(c);
+  test_program<float, N>("layered", gemm<N>, a, b, c, ans);
+
   transpose_matrix<float, N>(b);
   test_program<float, N>("parallel_tranposed_simd",
                          parallel_tranposed_simd<float, N>, a, b, c, ans);
+  transpose_matrix<float, N>(b);
 
   return 0;
 }
