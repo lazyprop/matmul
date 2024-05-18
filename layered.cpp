@@ -32,6 +32,7 @@ inline void gebp2(float ab[Mb][Mb], float bp[Mb][N], float cp[Mb][N]) {
 template <size_t N>
 void gemm(float* a, float* b, float* c) {
   const int Mb = 128;
+  //#pragma omp parallel for collapse(2)
   for (int k = 0; k < N; k += Mb) {
     // GEPP implicit to avoid polluting the cache
     for (int i = 0; i < N; i += Mb) {

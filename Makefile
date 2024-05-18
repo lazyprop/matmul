@@ -1,30 +1,31 @@
-CXX=clang++
+CXX=g++
 CFLAGS=-march=native -fopenmp -O3
 PERFFLAGS=cycles,cache-references,cache-misses,stalled-cycles-frontend,faults,l1_dtlb_misses,sse_avx_stalls
-
-default:
-	mkdir -p bin
 
 vecadd: vecadd.cpp
 	$(CXX) $(CFLAGS) vecadd.cpp -o vecadd
 
-bench:
-	$(CXX) $(CFLAGS) src/bench.cpp -o bin/bench
-	bin/bench
+bench: bench.cpp
+	$(CXX) $(CFLAGS) bench.cpp -o bench
+	./bench
 
-play:
-	$(CXX) $(CFLAGS) src/play.cpp -o bin/play
+play: play.cpp
+	$(CXX) $(CFLAGS) play.cpp -S
 
-layered:
-	$(CXX) $(CFLAGS) src/layered.cpp -o bin/layered
+baseline: baseline.cpp
+	$(CXX) $(CFLAGS) baseline.cpp -o baseline
+
+
+layered: layered.cpp
+	$(CXX) $(CFLAGS) layered.cpp -o layered
 
 run: layered
-	bin/layered
+	./layered
 
-gandalf: src/gandalf.cc
-	g++ src/gandalf.cc -O3 -march=native -o bin/gandalf
+gandalf: gandalf.cc
+	g++ gandalf.cc -O3 -march=native -o gandalf
 
 perf: play gandalf layered
-	perf stat -e $(PERFFLAGS) bin/layered
-	perf stat -e $(PERFFLAGS) bin/gandalf
+	perf stat -e $(PERFFLAGS) ./layered
+	perf stat -e $(PERFFLAGS) ./gandalf
 

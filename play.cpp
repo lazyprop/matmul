@@ -317,8 +317,8 @@ int bench() {
 
 int main() {
   const int N = 1024;
-  bench();
-  return 0;
+  //bench();
+  //return 0;
 
   float* a = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
   float* b = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
@@ -330,8 +330,9 @@ int main() {
   zero_matrix<float, N>(c);
 
 
-  const int runs = 100;
-  for (int i = 0; i < runs; i++) {
-    goto2<float, N>(a, b, c);
-  }
+  //const int runs = 100;
+  //for (int i = 0; i < runs; i++) {
+  //goto2<float, N>(a, b, c);
+  //}
+  baseline<float, N>(a, b, c);
 }

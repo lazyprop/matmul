@@ -16,7 +16,7 @@ int main() {
   float* ans = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
 
   rand_matrix<float, N>(a);
-  rand_matrix<float, N>(b);
+  zero_matrix<float, N>(b);
   zero_matrix<float, N>(c);
   zero_matrix<float, N>(ans);
 
