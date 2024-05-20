@@ -201,32 +201,47 @@ inline void sgemm(float* a, float* b, float* c, int lda, int ldb, int ldc) {
 }
 
 
-#define N 1024 
-#define I 100
+const int N = 8192;
+#define I 1
 
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include "util.h"
 
 int main() { 
   float* a = new alignas(32) float[N*N];
   float* b = new alignas(32) float[N*N];
   float* c = new alignas(32) float[N*N];
+  float* ans = new alignas(32) float[N*N];
 
+  /*
   for(int i=0; i<N*N; i++) {
     a[i] = i;
     b[i] = i;
+    c[i] = 0;
+    ans[i] = 0;
   }
+  */
+
+  rand_matrix<N>(a);
+  rand_matrix<N>(b);
+  zero_matrix<N>(c);
+  zero_matrix<N>(ans);
+
+  baseline<N>(a, b, ans);
 
   long double sum1=0;
   for(int i=0; i<I; i++) {
     auto start = std::chrono::high_resolution_clock::now();
+    zero_matrix<N>(c);
     sgemm<128, 128, 12, N, N, N>(a, b, c, N, N, N);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> ms_double = end - start;
     sum1 += ms_double.count();
-    for(int i=0; i<N*N; i++) c[i] = 0.f;
   }
+
+
   std::cout << "sgemm "<< I << " avg: " << sum1/I << " ms " << ((2.f*N*N*N)/((sum1/I)/1000))/1e9 << " GFLOPS" << std::endl;
   std::cout << "\n\n";
 

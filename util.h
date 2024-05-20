@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef UfloatIL_H
+#define UfloatIL_H
 
 
 #include <iostream>
@@ -10,28 +10,28 @@
 
 #include "matmul.h"
 
-template <typename T, size_t N>
-void transpose_matrix(T* mat) {
+template <size_t N>
+void transpose_matrix(float* mat) {
   for (int i = 0; i < N; i++) {
     for (int j = i; j < N; j++) {
-      T tmp = mat[j*N+i];
+      float tmp = mat[j*N+i];
       mat[j*N+i] = mat[i*N+j];
       mat[i*N+j] = tmp;
     }
   }
 }
 
-template <typename T, size_t N>
-void rand_matrix(T* mat) {
+template <size_t N>
+void rand_matrix(float* mat) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      mat[i*N+j] = (T) rand() / (T) RAND_MAX;
+      mat[i*N+j] = (float) rand() / (float) RAND_MAX;
     }
   }
 }
 
-template <typename T, size_t N>
-void zero_matrix(T* mat) {
+template <size_t N>
+void zero_matrix(float* mat) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       mat[i*N+j] = 0;
@@ -39,12 +39,19 @@ void zero_matrix(T* mat) {
   }
 }
 
-template <typename T, size_t N>
-int check_matrix(T* mat, T* ans) {
-  const T ERR = 1e-2;
+template <size_t N>
+void seq_init(float* mat) {
+  for (int i = 0; i < N*N; i++) {
+    mat[i] = i;
+  }
+}
+
+template <size_t N>
+int check_matrix(float* mat, float* ans) {
+  const float ERR = 1e-2;
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      T diff = fabsf(mat[i*N+j] - ans[i*N+j]);
+      float diff = fabsf(mat[i*N+j] - ans[i*N+j]);
       if (diff > ERR) {
         std::cout << "failed: answer does not match. difference: "
           //<< "%2f at (%d, %d)\n",
@@ -56,8 +63,8 @@ int check_matrix(T* mat, T* ans) {
   return true;
 }
 
-template <typename T, size_t N>
-void print_matrix(T* mat) {
+template <size_t N>
+void print_matrix(float* mat) {
   std::cout << std::fixed << std::setprecision(2);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
@@ -75,13 +82,13 @@ double time_to_gflops_s(const double seconds) {
   return gflops_second;
 }
 
-template <typename T, size_t N>
-void test_program(const char* name, void (*func)(T*, T*, T*),
-                  T* a, T* b, T* c, T* ans) {
+template <size_t N>
+void test_program(const char* name, void (*func)(float*, float*, float*),
+                  float* a, float* b, float* c, float* ans) {
   double seconds = 0;
   int runs = 5;
   for (int i = 0; i < runs; i++) {
-    zero_matrix<T, N>(c);
+    zero_matrix<N>(c);
     double begin = omp_get_wtime();
     func(a, b, c);
     seconds += omp_get_wtime() - begin;
@@ -93,7 +100,7 @@ void test_program(const char* name, void (*func)(T*, T*, T*),
   std::cout << "answer:\n";
   print_matrix(ans);
   #endif
-  check_matrix<float, N>(c, ans);
+  check_matrix<N>(c, ans);
 }
 
 #endif

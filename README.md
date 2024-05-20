@@ -1,20 +1,18 @@
 
 benchmarks (without initializing b)
 ```
-
-baseline: 41.77 GFLOPS/s
-transpose_simd: 10.63 GFLOPS/s
-blocked3_8x8: 8.18 GFLOPS/s
-goto2: 18.84 GFLOPS/s
-goto3: 10.84 GFLOPS/s
-layered: 44.26 GFLOPS/s
-parallel_tranposed_simd: 106.49 GFLOPS/s
+baseline: 41.4805 GFLOPS/s
+layered: 41.2699 GFLOPS/s
+layered2: 41.6114 GFLOPS/s
+blis: 32.0674 GFLOPS/s
+parallel_tranposed_simd: 98.1308 GFLOPS/s
 ```
 
 **goal: 200 gflops**
 
 initializing b (in c = ab) makes the baseline matmul go from 40 gflops to 15 gflops
-on my computer. this does not happen on other people's computers.
+on my computer. this does not happen on other people's computers. see the output of
+`baseline.cpp`
 
 ### Resources
 

@@ -10,7 +10,7 @@ bench: bench.cpp
 	./bench
 
 play: play.cpp
-	$(CXX) $(CFLAGS) play.cpp -S
+	$(CXX) $(CFLAGS) play.cpp -o play
 
 baseline: baseline.cpp
 	$(CXX) $(CFLAGS) baseline.cpp -o baseline
@@ -19,13 +19,13 @@ baseline: baseline.cpp
 layered: layered.cpp
 	$(CXX) $(CFLAGS) layered.cpp -o layered
 
-run: layered
-	./layered
+run: play
+	./play
 
 gandalf: gandalf.cc
 	g++ gandalf.cc -O3 -march=native -o gandalf
 
-perf: play gandalf layered
-	perf stat -e $(PERFFLAGS) ./layered
-	perf stat -e $(PERFFLAGS) ./gandalf
+perf: play gandalf
+	perf stat -e $(PERFFLAGS) ./play
+	//perf stat -e $(PERFFLAGS) ./gandalf
 
