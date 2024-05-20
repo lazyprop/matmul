@@ -85,8 +85,8 @@ inline void sgemm(float* a, float* b, float* c, int lda, int ldb, int ldc) {
           c7077.v = _mm256_setzero_ps();
 
           for(int iiiii=0; iiiii<iib; iiiii++) {
-            __builtin_prefetch(wpa+8);
-            __builtin_prefetch(wpb+8);
+            //__builtin_prefetch(wpa+8);
+            //__builtin_prefetch(wpb+8);
 
             a_vreg.v = _mm256_load_ps( (float*) wpa );
             wpa += 8;
@@ -201,8 +201,8 @@ inline void sgemm(float* a, float* b, float* c, int lda, int ldb, int ldc) {
 }
 
 
-const int N = 8192;
-#define I 1
+const int N = 1920;
+#define I 5
 
 #include <iostream>
 #include <iomanip>
@@ -235,7 +235,7 @@ int main() {
   for(int i=0; i<I; i++) {
     auto start = std::chrono::high_resolution_clock::now();
     zero_matrix<N>(c);
-    sgemm<128, 128, 12, N, N, N>(a, b, c, N, N, N);
+    sgemm<96, 96, 12, N, N, N>(a, b, c, N, N, N);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> ms_double = end - start;
     sum1 += ms_double.count();

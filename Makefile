@@ -1,6 +1,6 @@
 CXX=g++
 CFLAGS=-march=native -fopenmp -O3
-PERFFLAGS=cycles,cache-references,cache-misses,stalled-cycles-frontend,faults,l1_dtlb_misses,sse_avx_stalls
+PERFFLAGS=cycles,cache-references,cache-misses,stalled-cycles-frontend,stalled-cycles-backend,faults,l1_dtlb_misses,sse_avx_stalls,L1-icache-loads,L1-icache-load-misses,dTLB-loads,dTLB-load-misses,L1-dcache-loads,L1-dcache-load-misses
 
 vecadd: vecadd.cpp
 	$(CXX) $(CFLAGS) vecadd.cpp -o vecadd

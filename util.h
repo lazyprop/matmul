@@ -86,7 +86,7 @@ template <size_t N>
 void test_program(const char* name, void (*func)(float*, float*, float*),
                   float* a, float* b, float* c, float* ans) {
   double seconds = 0;
-  int runs = 5;
+  int runs = 10;
   for (int i = 0; i < runs; i++) {
     zero_matrix<N>(c);
     double begin = omp_get_wtime();

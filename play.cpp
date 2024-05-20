@@ -6,7 +6,7 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1024;
+  const int N = 1920;
   //bench();
   //return 0;
 
@@ -18,7 +18,7 @@ int main() {
   //seq_init<N>(a);
   //seq_init<N>(b);
   rand_matrix<N>(a);
-  rand_matrix<N>(b);
+  //rand_matrix<N>(b);
   zero_matrix<N>(c);
   zero_matrix<N>(ans);
 
@@ -35,5 +35,6 @@ int main() {
 
   //test_program<N>("layered", gemm<N>, a, b, c, ans);
   //test_program<N>("layered2", gemm2<N>, a, b, c, ans);
+  test_program<N>("baseline", baseline<N>, a, b, c, ans);
   test_program<N>("blis", blis<N>, a, b, c, ans);
 }

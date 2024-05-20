@@ -9,7 +9,7 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1024;
+  const int N = 1920;
 
   float* a = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
   float* b = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
