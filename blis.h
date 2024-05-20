@@ -6,7 +6,8 @@
 
 template <size_t N>
 void blis(float* a, float* b, float* c) {
-  const int Mc = 96;
+  const int Mc = 64;
+#pragma omp parallel for
   for (int i = 0; i < N; i += Mc) {
     for (int k = 0; k < N; k += Mc) {
       alignas(32) float aa[Mc][Mc];
@@ -27,7 +28,7 @@ void blis(float* a, float* b, float* c) {
           for (int iii = 0; iii < 8; iii++) {
             for (int kkk = 0; kkk < Mc; kkk++) {
               //aa[ii+iii][kkk] = a[(i+ii+iii)*N+k+kkk];
-              aa[ii+iii][kkk] = a[(i+ii+iii)*N+k+kkk];
+              aa[ii+iii][kkk] = wa[iii*N+kkk];
             }
           }
 

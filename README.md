@@ -1,12 +1,28 @@
 
 benchmarks (without initializing b)
+
+for N = 1024, Mc = 64
 ```
-baseline: 41.4805 GFLOPS/s
-layered: 41.2699 GFLOPS/s
-layered2: 41.6114 GFLOPS/s
-blis: 32.0674 GFLOPS/s
-parallel_tranposed_simd: 98.1308 GFLOPS/s
+baseline: 41.392 GFLOPS/s
+layered: 45.9056 GFLOPS/s
+layered2: 42.1783 GFLOPS/s
+blis: 42.0626 GFLOPS/s
+parallel_tranposed_simd: 93.0767 GFLOPS/s
+
+blis (parallel): 157.146 GFLOPS/s
 ```
+
+
+for N = 1920, Mc = 96
+```
+baseline: 41.8663 GFLOPS/s
+layered: 36.5576 GFLOPS/s
+layered2: 38.754 GFLOPS/s
+blis: 57.6408 GFLOPS/s
+parallel_tranposed_simd: 78.8357 GFLOPS/s
+```
+
+
 
 **goal: 200 gflops**
 

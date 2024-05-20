@@ -6,7 +6,7 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1920;
+  const int N = 1024;
   //bench();
   //return 0;
 
