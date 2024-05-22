@@ -1,8 +1,36 @@
-benchmarks
+
+learning about high performance matmul on cpu. the fastest kernels i've implemented
+are `blis` and `blis_12x8` in `blis.h`
+
+best blis configs:
+```
+blis<N, 128, 64, 1024>    // for N = 1024
+blis_12x8<N, 96, 48, 960> // for N = 1920
+```
+
+to benchmark all (half-decent) kernels, `make bench && ./bench`. only the blis
+kernels are multi threaded. remove `-fopenmp` from clags to limit to single thread.
+compare against numpy with `python test-numpy.py`. change value of N as required.
+
 
 initializing b (in c = ab) makes the baseline matmul go from 40 gflops to 15 gflops
 on my computer. this does not happen on other people's computers. see the output of
 `baseline.cpp`
+
+### benchmarks
+
+cpu details:
+```
+Model name:             AMD Ryzen 5 PRO 4650U with Radeon Graphics
+  Thread(s) per core:   2
+  Core(s) per socket:   6
+Caches (sum of all):      
+  L1d:                    192 KiB (6 instances)
+  L1i:                    192 KiB (6 instances)
+  L2:                     3 MiB (6 instances)
+  L3:                     8 MiB (2 instances)
+```
+
 
 i have randomly initialized b in the benchmarks otherwise the blis kernels are too fast
 to accurately judge their performance.
@@ -20,23 +48,24 @@ baseline: 7.56156 GFLOPS/s
 blis_12x8: 219.674 GFLOPS/s
 ```
 
-best blis configs:
-```
-blis<N, 128, 64, 1024>    // for N = 1024
-blis_12x8<N, 96, 48, 960> // for N = 1920
-```
 
 
-~**goal: 200 gflops**~ destroyed
+**~~goal: 200 gflops~~ destroyed**
 
 150 gflops on N = 1024. numpy gets 210.
 220 gflops on N = 1920. numpy gets 280.
 
 
+currently the blis 12x8 kernel requires N to be divisible by 12, so i can't use it with 
+N = 1024. if i figure out how to handle N not divisible by 12, i should be able to get
+a big boost on N = 1024. **todo** for now.
+
+
 ### resources
 
-- [Siboehm's article](https://siboehm.com/articles/22/Fast-MMM-on-CPU)
-- [Marek's article](https://marek.ai/matrix-multiplication-on-cpu.html)
-- [Case Study in Algorithms for Modern Hardware](https://en.algorithmica.org/hpc/algorithms/matmul/)
-- [Anatomy of High Perfomance Matrix Multiplication](https://www.cs.utexas.edu/users/flame/pubs/blis3_ipdps14.pdf)
-- [Fast 8x8 Transpose](https://stackoverflow.com/questions/25622745/transpose-an-8x8-float-using-avx-avx2)
+- [siboehm's article](https://siboehm.com/articles/22/fast-mmm-on-cpu)
+- [marek's article](https://marek.ai/matrix-multiplication-on-cpu.html)
+- [case study in algorithms for modern hardware](https://en.algorithmica.org/hpc/algorithms/matmul/)
+- [blis paper](https://www.cs.utexas.edu/users/flame/pubs/blis3_ipdps14.pdf)
+- [gotoblas paper](https://www.cs.utexas.edu/users/flame/pubs/GotoTOMS_final.pdf)
+- [avx blis implementation walkthrough and visualization by @riemannianmani](https://riemani.ca/blisgemm)

@@ -19,8 +19,8 @@ void bench_1920() {
   rand_matrix<N>(a);
   rand_matrix<N>(b);
 
-  //test_program<N>("baseline", baseline<N>, a, b, ans, ans);
-  test_program<N>("blis_12x8", blis_12x8<N, 96, 48, 960>, a, b, c, c);
+  test_program<N>("baseline", baseline<N>, a, b, ans, ans);
+  test_program<N>("blis_12x8", blis_12x8<N, 96, 48, 960>, a, b, c, ans);
 }
 
 void bench_1024() {
@@ -44,7 +44,7 @@ void bench_1024() {
 
 int main() {
   std::cout << "N = 1024\n";
-  //bench_1024();
+  bench_1024();
 
   std::cout << "\nN = 1920\n";
   bench_1920();
