@@ -57,11 +57,12 @@ inline void kernel_12x8(__m256 cc[12], float aa[Mc][Kc],
 
 template <int N, int Mc, int Kc, int Nc>
 void blis(float* a, float* b, float* c) {
-  alignas(32) float aa[Mc][Kc];
-  alignas(32) float bb[Kc][N];
-
+#pragma omp parallel for collapse(2)
   for (int j = 0; j < N; j += Nc) {
     for (int i = 0; i < N; i += Mc) {
+      alignas(32) float aa[Mc][Kc];
+      alignas(32) float bb[Kc][N];
+
       for (int k = 0; k < N; k += Kc) {
         for (int jj = 0; jj < Nc; jj += 8) {
           alignas(32) float* wb = &b[k*N+j+jj];
@@ -96,12 +97,13 @@ void blis(float* a, float* b, float* c) {
 }
 template <int N, int Mc, int Kc, int Nc>
 void blis_12x8(float* a, float* b, float* c) {
-  alignas(32) float aa[Mc][Kc];
-  alignas(32) float bb[Kc][N];
-
-#pragma omp parallel for collapse(2)
+  #pragma omp parallel for collapse(2)
   for (int j = 0; j < N; j += Nc) {
     for (int i = 0; i < N; i += Mc) {
+
+      alignas(32) float aa[Mc][Kc];
+      alignas(32) float bb[Kc][N];
+
       for (int k = 0; k < N; k += Kc) {
         for (int jj = 0; jj < Nc; jj += 8) {
           alignas(32) float* wb = &b[k*N+j+jj];

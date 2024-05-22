@@ -1,12 +1,12 @@
-#ifndef UfloatIL_H
-#define UfloatIL_H
+#ifndef UTIL_H
+#define UTIL_H
 
 
 #include <iostream>
 #include <iomanip>
 #include <cassert>
 #include <cmath>
-#include <omp.h>
+#include <chrono>
 
 #include "matmul.h"
 
@@ -85,21 +85,17 @@ double time_to_gflops_s(const double seconds) {
 template <size_t N>
 void test_program(const char* name, void (*func)(float*, float*, float*),
                   float* a, float* b, float* c, float* ans) {
+  int runs = 10;
   double seconds = 0;
-  int runs = 100;
   for (int i = 0; i < runs; i++) {
-    zero_matrix<N>(c);
-    double begin = omp_get_wtime();
+    auto start = std::chrono::high_resolution_clock::now();
     func(a, b, c);
-    seconds += omp_get_wtime() - begin;
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> ms_double = end - start;
+    seconds += ms_double.count();
   }
-  std::cout << name << ": " << time_to_gflops_s<N>(seconds / runs)
+  std::cout << name << ": " << time_to_gflops_s<N>(seconds / runs / 1000)
             << " GFLOPS/s\n";
-  #ifdef DEBUG
-  print_matrix(c);
-  std::cout << "answer:\n";
-  print_matrix(ans);
-  #endif
   check_matrix<N>(c, ans);
 }
 
