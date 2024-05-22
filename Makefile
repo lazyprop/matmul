@@ -1,6 +1,6 @@
 CXX=g++
 CFLAGS=-march=native -fopenmp -O3
-PERFFLAGS=cycles,cache-references,cache-misses,stalled-cycles-frontend,stalled-cycles-backend,faults,l1_dtlb_misses,sse_avx_stalls,L1-icache-loads,L1-icache-load-misses,dTLB-loads,dTLB-load-misses,L1-dcache-loads,L1-dcache-load-misses
+PERFFLAGS=cycles,instructions,cache-references,cache-misses,stalled-cycles-frontend,stalled-cycles-backend,faults,l1_dtlb_misses,sse_avx_stalls,L1-icache-loads,L1-icache-load-misses,dTLB-loads,dTLB-load-misses,L1-dcache-loads,L1-dcache-load-misses,l3_accesses,l3_misses
 
 vecadd: vecadd.cpp
 	$(CXX) $(CFLAGS) vecadd.cpp -o vecadd
@@ -27,5 +27,5 @@ gandalf: gandalf.cc
 
 perf: play gandalf
 	perf stat -e $(PERFFLAGS) ./play
-	//perf stat -e $(PERFFLAGS) ./gandalf
+	perf stat -e $(PERFFLAGS) ./gandalf
 

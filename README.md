@@ -1,30 +1,40 @@
 
 benchmarks (without initializing b)
 
-for N = 1024, Mc = 64
+for N = 1024
 ```
-baseline: 41.392 GFLOPS/s
-layered: 45.9056 GFLOPS/s
-layered2: 42.1783 GFLOPS/s
-blis: 42.0626 GFLOPS/s
-parallel_tranposed_simd: 93.0767 GFLOPS/s
-
-blis (parallel): 157.146 GFLOPS/s
+baseline: 41.8347 GFLOPS/s
+layered: 46.6375 GFLOPS/s
+layered2: 42.5188 GFLOPS/s
+blis: 48.6394 GFLOPS/s
+parallel_tranposed_simd: 105.552 GFLOPS/s
 ```
 
 
-for N = 1920, Mc = 96
+for N = 1920
 ```
-baseline: 41.8663 GFLOPS/s
-layered: 36.5576 GFLOPS/s
-layered2: 38.754 GFLOPS/s
-blis: 57.6408 GFLOPS/s
-parallel_tranposed_simd: 78.8357 GFLOPS/s
+baseline: 41.9104 GFLOPS/s
+layered: 40.0003 GFLOPS/s
+layered2: 38.6014 GFLOPS/s
+blis_12x8: 82.4083 GFLOPS/s
+parallel_tranposed_simd: 84.0283 GFLOPS/s
+
+blis_12x8: 212.3 GFLOPS/s (multithreaded)
 ```
 
 
+best blis configs:
+```
+blis<N, 128, 64, 1024>    // for N = 1024
+blis_12x8<N, 96, 48, 960> // for N = 1920
+```
 
-**goal: 200 gflops**
+
+**goal: 200 gflops (multi threaded)**
+
+reach 82 gflops on N = 1920 single threaded. numpy gets 110.
+212 gflops oon N = 1920 multi threaded. numpy gets 279.
+
 
 initializing b (in c = ab) makes the baseline matmul go from 40 gflops to 15 gflops
 on my computer. this does not happen on other people's computers. see the output of

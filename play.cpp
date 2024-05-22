@@ -6,7 +6,8 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1024;
+  const int N = 1920;
+
   //bench();
   //return 0;
 
@@ -35,6 +36,11 @@ int main() {
 
   //test_program<N>("layered", gemm<N>, a, b, c, ans);
   //test_program<N>("layered2", gemm2<N>, a, b, c, ans);
-  test_program<N>("baseline", baseline<N>, a, b, c, ans);
-  test_program<N>("blis", blis<N>, a, b, c, ans);
+  //test_program<N>("baseline", baseline<N>, a, b, c, ans);
+
+  //test_program<N>("blis", blis<N, 48, 48, 960>, a, b, c, ans);
+  //test_program<N>("blis", blis<N, 128, 64, 1024>, a, b, c, ans);
+  //test_program<N>("blis_12x8", blis_12x8<N, 96, 96, 960>, a, b, c, ans);
+  test_program<N>("blis_12x8", blis_12x8<N, 96, 48, 960>, a, b, c, ans);
+
 }

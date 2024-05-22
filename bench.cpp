@@ -9,7 +9,7 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1024;
+  const int N = 1920;
 
   float* a = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
   float* b = static_cast<float*>(std::aligned_alloc(32, sizeof(float) * N * N));
@@ -25,7 +25,8 @@ int main() {
   //test_program<N>("goto3", goto3<N>, a, b, c, ans);
   test_program<N>("layered", gemm<N>, a, b, c, ans);
   test_program<N>("layered2", gemm2<N>, a, b, c, ans);
-  test_program<N>("blis", blis<N>, a, b, c, ans);
+  //test_program<N>("blis", blis<N, 128, 64, 1024>, a, b, c, ans);
+  test_program<N>("blis_12x8", blis_12x8<N, 96, 48, 960>, a, b, c, ans);
 
   transpose_matrix<N>(b);
   test_program<N>("parallel_tranposed_simd",

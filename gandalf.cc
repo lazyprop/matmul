@@ -202,7 +202,7 @@ inline void sgemm(float* a, float* b, float* c, int lda, int ldb, int ldc) {
 
 
 const int N = 1920;
-#define I 5
+#define I 100
 
 #include <iostream>
 #include <iomanip>
@@ -225,7 +225,7 @@ int main() {
   */
 
   rand_matrix<N>(a);
-  rand_matrix<N>(b);
+  //rand_matrix<N>(b);
   zero_matrix<N>(c);
   zero_matrix<N>(ans);
 
