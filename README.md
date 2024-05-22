@@ -45,15 +45,15 @@ blis: 148.928 GFLOPS/s
 
 N = 1920
 baseline: 7.56156 GFLOPS/s
-blis_12x8: 219.674 GFLOPS/s
+blis_12x8: 254.638 GFLOPS/s
 ```
 
 
 
 **~~goal: 200 gflops~~ destroyed**
 
-150 gflops on N = 1024. numpy gets 210.
-220 gflops on N = 1920. numpy gets 280.
+150 gflops on N = 1024. numpy gets 210. \\
+250 gflops on N = 1920. numpy gets 280.
 
 
 currently the blis 12x8 kernel requires N to be divisible by 12, so i can't use it with 
