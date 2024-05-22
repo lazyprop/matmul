@@ -6,7 +6,7 @@
 #include "blis.h"
 
 int main() {
-  const int N = 1024;
+  const int N = 1920;
 
   //bench();
   //return 0;
@@ -24,5 +24,5 @@ int main() {
   zero_matrix<N>(ans);
 
   baseline<N>(a, b, ans);
-  test_program<N>("blis", blis<N, 128, 64, 512>, a, b, c, ans);
+  test_program<N>("blis_12x8", blis_12x8<N, 96, 48, 960>, a, b, c, ans);
 }

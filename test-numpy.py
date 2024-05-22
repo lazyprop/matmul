@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 
-N = 1024
+N = 1920
 x = np.random.randn(N, N).astype(np.float32)
 y = np.random.randn(N, N).astype(np.float32)
 

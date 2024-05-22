@@ -85,9 +85,10 @@ double time_to_gflops_s(const double seconds) {
 template <size_t N>
 void test_program(const char* name, void (*func)(float*, float*, float*),
                   float* a, float* b, float* c, float* ans) {
-  int runs = 10;
+  int runs = 100;
   double seconds = 0;
   for (int i = 0; i < runs; i++) {
+    zero_matrix<N>(c);
     auto start = std::chrono::high_resolution_clock::now();
     func(a, b, c);
     auto end = std::chrono::high_resolution_clock::now();

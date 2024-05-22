@@ -1,20 +1,23 @@
-benchmarks (without initializing b) 
+benchmarks
 
 initializing b (in c = ab) makes the baseline matmul go from 40 gflops to 15 gflops
 on my computer. this does not happen on other people's computers. see the output of
 `baseline.cpp`
 
+i have randomly initialized b in the benchmarks otherwise the blis kernels are too fast
+to accurately judge their performance.
+
 
 ```
 N = 1024
-baseline: 42.0589 GFLOPS/s
-layered: 44.3357 GFLOPS/s
-layered2: 42.5642 GFLOPS/s
-blis: 175.679 GFLOPS/s
+baseline: 17.8267 GFLOPS/s
+layered: 40.7594 GFLOPS/s
+layered2: 40.2947 GFLOPS/s
+blis: 148.928 GFLOPS/s
 
 N = 1920
-baseline: 57.194 GFLOPS/s
-blis_12x8: 333.19 GFLOPS/s
+baseline: 7.56156 GFLOPS/s
+blis_12x8: 219.674 GFLOPS/s
 ```
 
 best blis configs:
@@ -24,10 +27,10 @@ blis_12x8<N, 96, 48, 960> // for N = 1920
 ```
 
 
-**goal: 200 gflops (multi threaded)**
+~**goal: 200 gflops**~ destroyed
 
-reach 82 gflops on N = 1920 single threaded. numpy gets 110.
-212 gflops oon N = 1920 multi threaded. numpy gets 279.
+150 gflops on N = 1024. numpy gets 210.
+220 gflops on N = 1920. numpy gets 280.
 
 
 ### resources
