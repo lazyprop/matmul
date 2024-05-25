@@ -102,14 +102,13 @@ void test_program(const char* name, void (*func)(float*, float*, float*),
 
 template<int N>
 __global__ void zero_cuda_kernel(float* mat) {
-  int i = blockIdx.x * N + threadIdx.x;
-  int j = blockIdx.y * N + threadIdx.y;
-  mat[i*N+j] = 0;
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < N) mat[i] = 0;
 }
 
 template<int N>
 void zero_cuda(float* d_mat) {
-  zero_cuda_kernel<N><<<N, N>>>(d_mat);
+  zero_cuda_kernel<N><<<N * N / 1024, 1024>>>(d_mat);
 }
   
 #endif
