@@ -4,4 +4,6 @@ gandalf
 a.out
 blis
 baseline
+naive
+gpu
 

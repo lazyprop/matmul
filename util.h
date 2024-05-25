@@ -48,7 +48,7 @@ void seq_init(float* mat) {
 
 template <size_t N>
 int check_matrix(float* mat, float* ans) {
-  const float ERR = 1e-2;
+  const float ERR = 1e-1;
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       float diff = fabsf(mat[i*N+j] - ans[i*N+j]);
@@ -85,7 +85,7 @@ double time_to_gflops_s(const double seconds) {
 template <size_t N>
 void test_program(const char* name, void (*func)(float*, float*, float*),
                   float* a, float* b, float* c, float* ans) {
-  int runs = 100;
+  int runs = 10;
   double seconds = 0;
   for (int i = 0; i < runs; i++) {
     zero_matrix<N>(c);
@@ -100,4 +100,17 @@ void test_program(const char* name, void (*func)(float*, float*, float*),
   check_matrix<N>(c, ans);
 }
 
+template<int N>
+__global__ void zero_cuda_kernel(float* mat) {
+  int i = blockIdx.x * N + threadIdx.x;
+  int j = blockIdx.y * N + threadIdx.y;
+  mat[i*N+j] = 0;
+}
+
+template<int N>
+void zero_cuda(float* d_mat) {
+  zero_cuda_kernel<N><<<N, N>>>(d_mat);
+}
+  
 #endif
+

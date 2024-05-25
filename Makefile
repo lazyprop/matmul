@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS=-march=native -O3 -fopenmp
+CFLAGS=-std=c++17 -march=native -O3 -fopenmp
 PERFFLAGS=cycles,instructions,cache-references,cache-misses,stalled-cycles-frontend,stalled-cycles-backend,faults,l1_dtlb_misses,sse_avx_stalls,L1-icache-loads,L1-icache-load-misses,dTLB-loads,dTLB-load-misses,L1-dcache-loads,L1-dcache-load-misses,l3_accesses,l3_misses
 
 bench: bench.cpp
@@ -17,3 +17,5 @@ gandalf: gandalf.cc
 perf: play
 	perf stat -e $(PERFFLAGS) ./play
 
+gpu: gpu.cu
+	nvcc -O3 -std=c++17 gpu.cu -o gpu
