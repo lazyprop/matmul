@@ -31,9 +31,18 @@
   }
 
 
+#define DEBUG_KERNEL(name, N, kernel, grid_dim, block_dim, d_a, d_b, d_c)  \
+  { \
+    kernel<<<grid_dim, block_dim>>>(d_a, d_b, d_c);                     \
+    cudaDeviceSynchronize(); \
+    CHECK_ERROR(); \
+  }
+
+
+
 
 template<int N>
-__global__ void baseline_cuda_kernel(float* a, float* b, float* c) {
+__global__ void baseline_cuda(float* a, float* b, float* c) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
   float acc = 0;
@@ -43,39 +52,9 @@ __global__ void baseline_cuda_kernel(float* a, float* b, float* c) {
   c[i*N+j] = acc;
 }
 
-template <int N>
-void baseline_cuda(float* a, float* b, float* c) {
-  float* d_a;
-  float* d_b;
-  float* d_c;
-
-  int matsize = N * N * sizeof(float);
-
-  cudaMalloc(&d_a, matsize);
-  cudaMalloc(&d_b, matsize);
-  cudaMalloc(&d_c, matsize);
-  
-  cudaMemcpy(d_a, a, matsize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_b, b, matsize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_c, c, matsize, cudaMemcpyHostToDevice);
-
-  dim3 block_dim(32, 32);
-  dim3 grid_dim(N / 32, N / 32);
-
-  baseline_cuda_kernel<N><<<grid_dim, block_dim>>>(d_a, d_b, d_c);
-  BENCH_KERNEL("baseline_cuda", N, baseline_cuda_kernel<N>, grid_dim, block_dim,
-               d_a, d_b, d_c);
-
-  cudaMemcpy(c, d_c, matsize, cudaMemcpyDeviceToHost);
-
-  cudaFree(d_a);
-  cudaFree(d_b);
-  cudaFree(d_c);
-}
-
 
 template<int N, int Mc>
-__global__ void coalesced_kernel(float* a, float* b, float* c) {
+__global__ void gmem_coalesced(float* a, float* b, float* c) {
   int i = blockIdx.x * Mc + (threadIdx.x / Mc);
   int j = blockIdx.y * Mc + (threadIdx.x % Mc);
   float acc = 0;
@@ -85,35 +64,30 @@ __global__ void coalesced_kernel(float* a, float* b, float* c) {
   c[i*N+j] = acc;
 }
 
-template <int N>
-void coalesced(float* a, float* b, float* c) {
-  float* d_a;
-  float* d_b;
-  float* d_c;
+template<int N, int Mc>
+__global__ void smem_blocked(float* a, float* b, float* c) {
+  int i = blockIdx.x * Mc;
+  int j = blockIdx.y * Mc;
+  int ii = threadIdx.x / Mc;
+  int jj = threadIdx.x % Mc;
 
-  int matsize = N * N * sizeof(float);
+  __shared__ float aa[Mc][Mc], bb[Mc][Mc], cc[Mc][Mc];
+  cc[ii][jj] = 0;
+  for (int k = 0; k < N; k += Mc) {
+    // abusing the index notation here
+    // basically each thread loads one Mc x Mc element of a and b
+    aa[ii][jj] = a[(i+ii)*N+k+jj];
+    bb[ii][jj] = b[(k+ii)*N+j+jj];
 
-  cudaMalloc(&d_a, matsize);
-  cudaMalloc(&d_b, matsize);
-  cudaMalloc(&d_c, matsize);
-  
-  cudaMemcpy(d_a, a, matsize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_b, b, matsize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_c, c, matsize, cudaMemcpyHostToDevice);
+    __syncthreads();
+    for (int kk = 0; kk < Mc; kk++) {
+      cc[ii][jj] += aa[ii][kk] * bb[kk][jj];
+    }
+    __syncthreads();
+  }
 
-  dim3 block_dim(32 * 32);
-  dim3 grid_dim(N / 32, N / 32);
-
-  BENCH_KERNEL("coalesced_cuda", N, (coalesced_kernel<N, 32>), grid_dim, block_dim,
-               d_a, d_b, d_c);
-
-  cudaMemcpy(c, d_c, matsize, cudaMemcpyDeviceToHost);
-
-  cudaFree(d_a);
-  cudaFree(d_b);
-  cudaFree(d_c);
+  c[(i+ii)*N+j+jj] = cc[ii][jj];
 }
-
 
 int main() {
   const int N = 1024;
@@ -133,10 +107,37 @@ int main() {
   baseline<N>(a, b, ans);
   //print_matrix<N>(ans);
 
-  baseline_cuda<N>(a, b, c);
+  float* d_a;
+  float* d_b;
+  float* d_c;
+
+  int matsize = N * N * sizeof(float);
+
+  cudaMalloc(&d_a, matsize);
+  cudaMalloc(&d_b, matsize);
+  cudaMalloc(&d_c, matsize);
+  
+  cudaMemcpy(d_a, a, matsize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_b, b, matsize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_c, c, matsize, cudaMemcpyHostToDevice);
+
+  BENCH_KERNEL("baseline_cuda", N, baseline_cuda<N>,
+               dim3(N / 32, N / 32), dim3(32, 32), d_a, d_b, d_c);
+  cudaMemcpy(c, d_c, matsize, cudaMemcpyDeviceToHost);
   check_matrix<N>(c, ans);
 
-  zero_matrix<N>(c);
-  coalesced<N>(a, b, c);
+  BENCH_KERNEL("gmem_coalesced", N, (gmem_coalesced<N, 32>),
+               dim3(N / 32, N / 32), dim3(32 * 32), d_a, d_b, d_c);
+  cudaMemcpy(c, d_c, matsize, cudaMemcpyDeviceToHost);
   check_matrix<N>(c, ans);
+
+  BENCH_KERNEL("smem_blocked", N, (smem_blocked<N, 32>),
+               dim3(N / 32, N / 32), dim3(32 * 32), d_a, d_b, d_c);
+  cudaMemcpy(c, d_c, matsize, cudaMemcpyDeviceToHost);
+  check_matrix<N>(c, ans);
+
+
+  cudaFree(d_a);
+  cudaFree(d_b);
+  cudaFree(d_c);
 }
