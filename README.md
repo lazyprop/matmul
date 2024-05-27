@@ -48,6 +48,15 @@ baseline: 7.56156 GFLOPS/s
 blis_12x8: 254.638 GFLOPS/s
 ```
 
+gpu bench: (N = 2048)
+```
+baseline_cuda: 170.983 GFLOPS/s
+gmem_coalesced: 1315.48 GFLOPS/s
+smem_blocked: 1607.82 GFLOPS/s
+smem_blocked2: 1649.84 GFLOPS/s
+thread_blocked: 5399.37 GFLOPS/s
+thread_blocked2: 3765.12 GFLOPS/s
+```
 
 
 **~~goal: 200 gflops~~ destroyed**
